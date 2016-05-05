@@ -13,6 +13,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Dx.WopiServerSql.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Dx.WopiServerSql.Repository.UnitTest", "Microsoft.Dx.WopiServerSql.UnitTest\Microsoft.Dx.WopiServerSql.Repository.UnitTest.csproj", "{84D6B5D3-C2CC-4EA7-BDB3-60C649D0AD68}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{559E4797-A83D-4C62-BF99-479C1315DEB4}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
