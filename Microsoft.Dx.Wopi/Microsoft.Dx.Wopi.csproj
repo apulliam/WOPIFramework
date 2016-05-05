@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B16DDC2B-801D-4181-AFF3-C9FA688814A3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.Dx.Wopi</RootNamespace>
+    <AssemblyName>Microsoft.Dx.Wopi</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controllers\WopiFilesController.cs" />
+    <Compile Include="Models\BreadcrumbProperties.cs" />
+    <Compile Include="Models\GetLockRequest.cs" />
+    <Compile Include="Models\GetLockResponse.cs" />
+    <Compile Include="Models\IBreadcrumbProperties.cs" />
+    <Compile Include="Models\IFileProperties.cs" />
+    <Compile Include="Models\IExtendedFileProperties.cs" />
+    <Compile Include="Models\IFileUrlProperties.cs" />
+    <Compile Include="Models\IPostMessageProperties.cs" />
+    <Compile Include="Models\IUserMetadata.cs" />
+    <Compile Include="Models\IUserPermissions.cs" />
+    <Compile Include="Models\IWopiHostCapabilities.cs" />
+    <Compile Include="Models\IWopiHostProperties.cs" />
+    <Compile Include="Models\UnlockAndRelockRequest.cs" />
+    <Compile Include="Models\LockRequest.cs" />
+    <Compile Include="Models\LockResponse.cs" />
+    <Compile Include="Models\PostMessageProperties.cs" />
+    <Compile Include="Models\PutFileRequest.cs" />
+    <Compile Include="Models\PutFileResponse.cs" />
+    <Compile Include="Models\PutRelativeFileSpecificRequest.cs" />
+    <Compile Include="Models\PutRelativeFileSuggestedRequest.cs" />
+    <Compile Include="Models\PutRelativeFileResponse.cs" />
+    <Compile Include="Models\PutUserInfoRequest.cs" />
+    <Compile Include="Models\PutUserInfoResponse.cs" />
+    <Compile Include="Models\RefreshLockRequest.cs" />
+    <Compile Include="Models\RefreshLockResponse.cs" />
+    <Compile Include="Models\RenameFileRequest.cs" />
+    <Compile Include="Models\RenameFileResponse.cs" />
+    <Compile Include="Models\UnlockRequest.cs" />
+    <Compile Include="Models\UnlockResponse.cs" />
+    <Compile Include="Models\WopiAction.cs" />
+    <Compile Include="Models\WopiHostCapabilities.cs" />
+    <Compile Include="Models\WopiHostProperties.cs" />
+    <Compile Include="Models\WopiQueryStrings.cs" />
+    <Compile Include="Models\WopiRequestHeaders.cs" />
+    <Compile Include="Models\WopiResponseHeaders.cs" />
+    <Compile Include="Models\WopiUrlPlaceholders.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Models\CheckFileInfoRequest.cs" />
+    <Compile Include="Models\CheckFileInfoResponse.cs" />
+    <Compile Include="Models\GetFileRequest.cs" />
+    <Compile Include="Models\GetFileResponse.cs" />
+    <Compile Include="Models\WopiRequest.cs" />
+    <Compile Include="Models\WopiResponse.cs" />
+    <Compile Include="Security\WopiProof.cs" />
+    <Compile Include="WopiDiscovery.cs" />
+    <Compile Include="Models\WopiConfiguration.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

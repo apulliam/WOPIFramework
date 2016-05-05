@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Dx.Wopi", "Microsoft.Dx.Wopi\Microsoft.Dx.Wopi.csproj", "{B16DDC2B-801D-4181-AFF3-C9FA688814A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Dx.WopiServerSql", "Microsoft.Dx.WopiServerSql\Microsoft.Dx.WopiServerSql.csproj", "{2321459D-DBA1-45FA-8D9F-B579E7FCE91F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Dx.WopiServerDocumentDb", "Microsoft.Dx.WopiServerDocumentDb\Microsoft.Dx.WopiServerDocumentDb.csproj", "{FD731E0A-333E-4F9D-994B-81D43AB38DC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Dx.WopiServerSql.Repository", "Microsoft.Dx.WopiServerSql.Repository\Microsoft.Dx.WopiServerSql.Repository.csproj", "{09F7939F-C28D-4DE7-A1F8-A1F4CD7A3539}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Dx.WopiServerSql.Repository.UnitTest", "Microsoft.Dx.WopiServerSql.UnitTest\Microsoft.Dx.WopiServerSql.Repository.UnitTest.csproj", "{84D6B5D3-C2CC-4EA7-BDB3-60C649D0AD68}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B16DDC2B-801D-4181-AFF3-C9FA688814A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B16DDC2B-801D-4181-AFF3-C9FA688814A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B16DDC2B-801D-4181-AFF3-C9FA688814A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B16DDC2B-801D-4181-AFF3-C9FA688814A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2321459D-DBA1-45FA-8D9F-B579E7FCE91F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2321459D-DBA1-45FA-8D9F-B579E7FCE91F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2321459D-DBA1-45FA-8D9F-B579E7FCE91F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2321459D-DBA1-45FA-8D9F-B579E7FCE91F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD731E0A-333E-4F9D-994B-81D43AB38DC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD731E0A-333E-4F9D-994B-81D43AB38DC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD731E0A-333E-4F9D-994B-81D43AB38DC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD731E0A-333E-4F9D-994B-81D43AB38DC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09F7939F-C28D-4DE7-A1F8-A1F4CD7A3539}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09F7939F-C28D-4DE7-A1F8-A1F4CD7A3539}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09F7939F-C28D-4DE7-A1F8-A1F4CD7A3539}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09F7939F-C28D-4DE7-A1F8-A1F4CD7A3539}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84D6B5D3-C2CC-4EA7-BDB3-60C649D0AD68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84D6B5D3-C2CC-4EA7-BDB3-60C649D0AD68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84D6B5D3-C2CC-4EA7-BDB3-60C649D0AD68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84D6B5D3-C2CC-4EA7-BDB3-60C649D0AD68}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

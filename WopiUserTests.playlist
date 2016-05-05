@@ -1,0 +1,1 @@
+<Playlist Version="1.0"><Add Test="Microsoft.Dx.WopiServer.UnitTest.UnitTest1.TestAddUser" /><Add Test="Microsoft.Dx.WopiServer.UnitTest.UnitTest1.TestDeleteUser" /><Add Test="Microsoft.Dx.WopiServer.UnitTest.UserRepositoryTests.TestGetUser" /></Playlist>
