@@ -35,7 +35,7 @@ namespace Microsoft.Dx.WopiServerSql.Controllers
                 return Task.FromResult<bool>(false);
             }
         }
-        
+
         public override async Task<WopiResponse> CheckFileInfo(CheckFileInfoRequest checkFileInfoRequest)
         {
             var userId = WopiSecurity.GetIdentityNameFromToken(checkFileInfoRequest.AccessToken);
@@ -68,7 +68,7 @@ namespace Microsoft.Dx.WopiServerSql.Controllers
                 if (edit != null)
                     hostEditUrl = WopiDiscovery.GetActionUrl(edit, wopiFile.FileId.ToString(), checkFileInfoRequest.RequestUri.Authority);
 
-                  // Write the response and return a success 200
+                // Write the response and return a success 200
                 var wopiResponse = checkFileInfoRequest.ResponseOK(wopiFile.FileName, wopiFile.OwnerId, wopiFile.Size, userId, wopiFile.Version.ToString());
                 // Add optional items
                 wopiResponse.CloseUrl = new Uri(closeUrl);
@@ -76,7 +76,7 @@ namespace Microsoft.Dx.WopiServerSql.Controllers
                     wopiResponse.HostViewUrl = new Uri(hostViewUrl);
                 if (hostEditUrl != null)
                     wopiResponse.HostEditUrl = new Uri(hostEditUrl);
-                wopiResponse.UniqueContentId = wopiFile.UniqueIdentifier;
+
                 wopiResponse.UserInfo = wopiFile.FilePermissions.First().UserInfo;
 
                 return wopiResponse;
@@ -84,27 +84,27 @@ namespace Microsoft.Dx.WopiServerSql.Controllers
             else
                 return checkFileInfoRequest.ResponseServerError(string.Format("Unknown response from WopiFileRepository.GetFileInfoByTenantUser: {0}", response.Item1));
         }
-        
+
         public override async Task<WopiResponse> GetFile(GetFileRequest getFileRequest)
         {
             var userId = WopiSecurity.GetIdentityNameFromToken(getFileRequest.AccessToken);
 
             // Lookup the file in the database
             var wopiFileRepository = new WopiFileRepository();
-            var fileStream = await wopiFileRepository.GetFileContent(getFileRequest.ResourceId, userId);
-            
+            var response = await wopiFileRepository.GetFileContent(getFileRequest.ResourceId, userId);
+
             // Check for null file
-            if (fileStream == null)
+            if (response.Item1 == HttpStatusCode.NotFound)
                 return getFileRequest.ResponseNotFound();
             else
                 // Write the response and return success 200
-                return getFileRequest.ResponseOK(new StreamContent(fileStream));
+                return getFileRequest.ResponseOK(new StreamContent(response.Item2), response.Item3);
         }
 
         public override async Task<WopiResponse> Lock(LockRequest lockRequest)
         {
             var userId = WopiSecurity.GetIdentityNameFromToken(lockRequest.AccessToken);
-            
+
             var wopiFileRepository = new WopiFileRepository();
             var response = await wopiFileRepository.LockFile(lockRequest.ResourceId, userId, lockRequest.Lock, null);
 
@@ -118,7 +118,7 @@ namespace Microsoft.Dx.WopiServerSql.Controllers
                 return lockRequest.ResponseLockConflict(response.Item2);
             // File successfully locked
             else if (response.Item1 == HttpStatusCode.OK)
-                return lockRequest.ResponseOK();
+                return lockRequest.ResponseOK(response.Item3);
             else
                 return lockRequest.ResponseServerError(string.Format("Unknown HTTPStatusCode from WopiFileRepository.LockFile: {0}", response.Item1));
         }
@@ -139,7 +139,7 @@ namespace Microsoft.Dx.WopiServerSql.Controllers
                 return unlockRequest.ResponseLockConflict(response.Item2);
             // File successfully unlocked
             else if (response.Item1 == HttpStatusCode.OK)
-                return unlockRequest.ResponseOK();
+                return unlockRequest.ResponseOK(response.Item3);
             else
                 return unlockRequest.ResponseServerError(string.Format("Unknown HTTPStatusCode from WopiFileRepository.UnlockFile: {0}", response.Item1));
         }
@@ -233,20 +233,20 @@ namespace Microsoft.Dx.WopiServerSql.Controllers
                 var token = security.GenerateToken(response.Item2.OwnerId);
                 var tokenStr = security.WriteToken(token);
 
-                var url = string.Format("https://{0}/wopi/files/{1}?access_token={2}",
-                    putRelativeFileSpecificRequest.RequestUri.Authority, response.Item2.FileId, tokenStr);
+                var url = new Uri(string.Format("https://{0}/wopi/files/{1}?access_token={2}",
+                    putRelativeFileSpecificRequest.RequestUri.Authority, response.Item2.FileId, tokenStr));
 
-                string hostViewUrl = null;
-                string hostEditUrl = null;
+                Uri hostViewUrl = null;
+                Uri hostEditUrl = null;
                 var actions = await WopiDiscovery.GetActions();
                 var view = actions.FirstOrDefault(i => i.ext == response.Item2.FileExtension && i.name == "view");
                 if (view != null)
-                    hostViewUrl = WopiDiscovery.GetActionUrl(view, response.Item2.FileId, putRelativeFileSpecificRequest.RequestUri.Authority);
+                    hostViewUrl = new Uri(WopiDiscovery.GetActionUrl(view, response.Item2.FileId, putRelativeFileSpecificRequest.RequestUri.Authority));
                 var edit = actions.FirstOrDefault(i => i.ext == response.Item2.FileExtension && i.name == "edit");
                 if (edit != null)
-                    hostEditUrl = WopiDiscovery.GetActionUrl(edit, response.Item2.FileId, putRelativeFileSpecificRequest.RequestUri.Authority);
+                    hostEditUrl = new Uri(WopiDiscovery.GetActionUrl(edit, response.Item2.FileId, putRelativeFileSpecificRequest.RequestUri.Authority));
 
-                return putRelativeFileSpecificRequest.ResponseOK(response.Item2.FileName, new Uri(url), new Uri(hostViewUrl), new Uri(hostEditUrl));
+                return putRelativeFileSpecificRequest.ResponseOK(response.Item2.FileName, url, hostViewUrl, hostEditUrl);
             }
             else
                 return putRelativeFileSpecificRequest.ResponseServerError(string.Format("Unknown HTTPStatusCode from WopiFileRepository.CreateCopy: {0}", response.Item1));
@@ -270,22 +270,25 @@ namespace Microsoft.Dx.WopiServerSql.Controllers
 
                 //var name = newFile.BaseFileName;
 
-                var url = string.Format("https://{0}/wopi/files/{1}?access_token={2}",
-                    putRelativeFileSuggestedRequest.RequestUri.Authority, response.Item2.FileId, tokenStr);
+                var url = new Uri(string.Format("https://{0}/wopi/files/{1}?access_token={2}",
+                    putRelativeFileSuggestedRequest.RequestUri.Authority, response.Item2.FileId, tokenStr));
 
                 // Add the optional properties to response if applicable (HostViewUrl, HostEditUrl)
-                string hostViewUrl = null;
-                string hostEditUrl = null;
+                Uri hostViewUrl = null;
+                Uri hostEditUrl = null;
                 var actions = await WopiDiscovery.GetActions();
                 var view = actions.FirstOrDefault(i => i.ext == response.Item2.FileExtension && i.name == "view");
                 if (view != null)
-                    hostViewUrl = WopiDiscovery.GetActionUrl(view, response.Item2.FileId, putRelativeFileSuggestedRequest.RequestUri.Authority);
+                {
+                    hostViewUrl = new Uri(WopiDiscovery.GetActionUrl(view, response.Item2.FileId, putRelativeFileSuggestedRequest.RequestUri.Authority));
+                }
                 var edit = actions.FirstOrDefault(i => i.ext == response.Item2.FileExtension && i.name == "edit");
                 if (edit != null)
-                    hostEditUrl = WopiDiscovery.GetActionUrl(edit, response.Item2.FileId, putRelativeFileSuggestedRequest.RequestUri.Authority);
-
+                {
+                    hostEditUrl = new Uri(WopiDiscovery.GetActionUrl(edit, response.Item2.FileId, putRelativeFileSuggestedRequest.RequestUri.Authority));
+                }
                 // Write the response and return a success 200
-                return putRelativeFileSuggestedRequest.ResponseOK(response.Item2.FileName, new Uri(url), new Uri(hostViewUrl), new Uri(hostEditUrl));
+                return putRelativeFileSuggestedRequest.ResponseOK(response.Item2.FileName, url, hostViewUrl, hostEditUrl);
             }
             else
                 return putRelativeFileSuggestedRequest.ResponseServerError(string.Format("Unknown HTTPStatusCode from WopiFileRepository.CreateCopySuggested: {0}", response.Item1));
@@ -333,9 +336,22 @@ namespace Microsoft.Dx.WopiServerSql.Controllers
             else if (response.Item1 == HttpStatusCode.Conflict)
                 return putFileRequest.ResponseLockConflict(response.Item2);
             else if (response.Item1 == HttpStatusCode.OK)
-                return putFileRequest.ResponseOK();
+                return putFileRequest.ResponseOK(response.Item3);
             else
                 return putFileRequest.ResponseServerError(string.Format("Unknown HTTPStatusCode from WopiFileRepository.UpdateFileContent: {0}", response.Item1));
+        }
+
+        public override async Task<WopiResponse> DeleteFile(DeleteFileRequest deleteFileRequest)
+        {
+            var userId = WopiSecurity.GetIdentityNameFromToken(deleteFileRequest.AccessToken);
+            var wopiFileRespository = new WopiFileRepository();
+            var response = await wopiFileRespository.DeleteFile(deleteFileRequest.ResourceId, userId);
+            if (response == HttpStatusCode.NotFound)
+                return deleteFileRequest.ResponseNotFound();
+            else if (response == HttpStatusCode.OK)
+                return deleteFileRequest.ResponseOK();
+            else
+                return deleteFileRequest.ResponseServerError(string.Format("Unknown HTTPStatusCode from WopiFileRepository.UpdateFileContent: {0}", response));
         }
     }
 }

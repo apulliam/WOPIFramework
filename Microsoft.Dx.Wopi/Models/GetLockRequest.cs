@@ -34,5 +34,13 @@ namespace Microsoft.Dx.Wopi.Models
                 LockFailureReason = lockFailureReason
             };
         }
+
+        public WopiResponse ResponseNotImplemented()
+        {
+            return new GetLockResponse()
+            {
+                StatusCode = HttpStatusCode.NotImplemented
+            };
+        }
     }
 }

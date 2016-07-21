@@ -63,5 +63,13 @@ namespace Microsoft.Dx.Wopi.Models
                 StatusCode = HttpStatusCode.BadRequest
             };
         }
+
+        public WopiResponse ResponseNotImplemented()
+        {
+            return new PutRelativeFileResponse()
+            {
+                StatusCode = HttpStatusCode.NotImplemented
+            };
+        }
     }
 }

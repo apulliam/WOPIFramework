@@ -31,7 +31,13 @@ namespace Microsoft.Dx.Wopi.Models
                 HostEditUrl = hostEditUrl
             };
         }
+        public WopiResponse ResponseNotImplemented()
+        {
+            return new PutRelativeFileResponse()
+            {
+                StatusCode = HttpStatusCode.NotImplemented
+            };
+        }
 
-     
     }
 }

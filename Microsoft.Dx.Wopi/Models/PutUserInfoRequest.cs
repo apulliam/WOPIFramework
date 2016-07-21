@@ -27,5 +27,13 @@ namespace Microsoft.Dx.Wopi.Models
             };
 
         }
+
+        public WopiResponse ResponseNotImplemented()
+        {
+            return new PutUserInfoResponse()
+            {
+                StatusCode = HttpStatusCode.NotImplemented
+            };
+        }
     }
 }

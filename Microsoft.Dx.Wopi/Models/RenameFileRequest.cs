@@ -40,5 +40,13 @@ namespace Microsoft.Dx.Wopi.Models
                 InvalidFileNameError = invalidFileNameError
             };
         }
+
+        public WopiResponse ResponseNotImplemented()
+        {
+            return new RenameFileResponse()
+            {
+                StatusCode = HttpStatusCode.NotImplemented
+            };
+        }
     }
 }

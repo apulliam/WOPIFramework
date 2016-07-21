@@ -32,12 +32,7 @@ namespace Microsoft.Dx.WopiServerSql.Repository
         [Required]
         public int Version { get; set; }
 
-        // We're using UniqueIdentifier option instead of SHA256 since Azure blobs arleady have MD5 hash
-        // Neither are required by WOPI spec, but either SHA256 hash or other unique identifier are 
-        // recommended for better caching performance
-        [Required]
-        public string UniqueIdentifier { get; set; }
-
+     
         [Required]
         public DateTimeOffset LastModifiedTime { get; set; }
 

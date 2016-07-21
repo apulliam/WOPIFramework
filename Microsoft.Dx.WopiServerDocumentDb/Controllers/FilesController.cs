@@ -626,5 +626,10 @@ namespace Microsoft.Dx.WopiServerDocumentDb.Controllers
             }
             return wopiResponse;
         }
+
+        public override Task<WopiResponse> DeleteFile(DeleteFileRequest deleteFileRequest)
+        {
+            return Task.FromResult<WopiResponse>(deleteFileRequest.ResponseNotImplemented());
+        }
     }
 }

@@ -54,5 +54,12 @@ namespace Microsoft.Dx.Wopi.Models
             };
         }
 
+        public WopiResponse ResponseNotImplemented()
+        {
+            return new PutFileResponse()
+            {
+                StatusCode = HttpStatusCode.NotImplemented
+            };
+        }
     }
 }

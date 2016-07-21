@@ -18,11 +18,12 @@ namespace Microsoft.Dx.Wopi.Models
         public long? MaxExpectedSize { get; private set; }
 
       
-        public GetFileResponse ResponseOK(HttpContent content)
+        public GetFileResponse ResponseOK(HttpContent content, string itemVersion = null)
         {
             return new GetFileResponse()
             {
                 StatusCode = HttpStatusCode.OK,
+                ItemVersion = itemVersion,
                 Content = content
             };
         }

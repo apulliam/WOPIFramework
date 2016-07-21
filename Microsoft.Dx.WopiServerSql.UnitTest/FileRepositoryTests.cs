@@ -39,13 +39,16 @@ namespace Microsoft.Dx.WopiServer.UnitTest
                 Assert.AreEqual(wopiFile1.FileId, wopiFile2.FileId);
                 Assert.IsTrue(wopiFile2.FilePermissions.Count == 1);
 
-                using (var stream = await fileRepository.GetFileContent(wopiFile1.FileId, tenant1User1))
+                var contentResponse = await fileRepository.GetFileContent(wopiFile1.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, contentResponse.Item1);
+                using (var stream = contentResponse.Item2)
                 {
                     Assert.IsNotNull(stream);
                     Assert.IsTrue(stream.Length > 0);
                 }
 
-                await fileRepository.DeleteFile(wopiFile1.FileId, tenant1User1);
+                var deleteResponse = await fileRepository.DeleteFile(wopiFile1.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
                 using (var wopiContext = new WopiContext())
                 {
                     var file = await wopiContext.Files.Where(f => f.FileId == wopiFile1.FileId).FirstOrDefaultAsync();
@@ -53,8 +56,9 @@ namespace Microsoft.Dx.WopiServer.UnitTest
                     var filePermission = await wopiContext.FilePermissions.Where(f => f.FileId == wopiFile1.FileId).FirstOrDefaultAsync();
                     Assert.IsNull(filePermission);
 
-                    var stream = await fileRepository.GetFileContent(wopiFile1.FileId, wopiFile1.Container);
-                    Assert.IsNull(stream);
+                    contentResponse = await fileRepository.GetFileContent(wopiFile1.FileId, wopiFile1.Container);
+                    Assert.AreEqual(HttpStatusCode.NotFound, contentResponse.Item1);
+                    Assert.IsNull(contentResponse.Item2);
                 }
             }
             
@@ -70,14 +74,14 @@ namespace Microsoft.Dx.WopiServer.UnitTest
                 var wopiFile = await fileRepository.AddFile(tenant1User1, tenant1, fileStream, fileName);
                 Assert.IsNotNull(wopiFile);
 
-                var result1 = await fileRepository.GetFileInfoByTenantUser(wopiFile.FileId, tenant1User2, tenant1);
-                Assert.AreEqual(HttpStatusCode.OK, result1.Item1);
+                var fileInfoResponse1 = await fileRepository.GetFileInfoByTenantUser(wopiFile.FileId, tenant1User2, tenant1);
+                Assert.AreEqual(HttpStatusCode.OK, fileInfoResponse1.Item1);
                     
-                var result2 = await fileRepository.GetFileInfoByTenantUser(wopiFile.FileId, tenant2User1, tenant2);
-                Assert.AreEqual(HttpStatusCode.Unauthorized, result2.Item1);
+                var fileInfoResponse2 = await fileRepository.GetFileInfoByTenantUser(wopiFile.FileId, tenant2User1, tenant2);
+                Assert.AreEqual(HttpStatusCode.Unauthorized, fileInfoResponse2.Item1);
 
-                await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
-            
+                var deleteResponse = await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
             }
         }
 
@@ -92,8 +96,8 @@ namespace Microsoft.Dx.WopiServer.UnitTest
                 var wopiFile = await fileRepository.AddFile(tenant1User1, tenant1, fileStream, fileName);
 
                 // lock for 3 seconds
-                var result = await fileRepository.LockFile(wopiFile.FileId, tenant1User1, lockId, null, 0.05);
-                Assert.AreEqual(HttpStatusCode.OK, result);
+                var lockResponse = await fileRepository.LockFile(wopiFile.FileId, tenant1User1, lockId, null, 0.05);
+                Assert.AreEqual(HttpStatusCode.OK, lockResponse.Item1);
                 using (var wopiContext = new WopiContext())
                 {
                     var file = await wopiContext.Files.Where(f => f.FileId == wopiFile.FileId).FirstOrDefaultAsync();
@@ -103,10 +107,11 @@ namespace Microsoft.Dx.WopiServer.UnitTest
 
                 // wait 5 seconds for lock to expire
                 await Task.Delay(5000);
-                result = await fileRepository.GetLockStatus(wopiFile.FileId, tenant1User1);
-                Assert.AreEqual(HttpStatusCode.OK, result);
+                var response2 = await fileRepository.GetLockStatus(wopiFile.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, response2.Item1);
 
-                await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
+                var deleteResponse = await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
             }
         }
 
@@ -119,8 +124,8 @@ namespace Microsoft.Dx.WopiServer.UnitTest
                 var fileName = Path.GetFileName(this.fileName);
                 var wopiFile = await fileRepository.AddFile(tenant1User1, tenant1, fileStream, fileName);
 
-                var result = await fileRepository.LockFile(wopiFile.FileId, tenant1User1, lockId, null, 0.10);
-                Assert.AreEqual(HttpStatusCode.OK, result);
+                var lockResponse = await fileRepository.LockFile(wopiFile.FileId, tenant1User1, lockId, null, 0.10);
+                Assert.AreEqual(HttpStatusCode.OK, lockResponse.Item1);
 
                 using (var wopiContext = new WopiContext())
                 {
@@ -129,15 +134,16 @@ namespace Microsoft.Dx.WopiServer.UnitTest
                     Assert.IsTrue(file.LockExpires.Value > DateTime.UtcNow);
                 }
 
-                result = await fileRepository.UnlockFile(wopiFile.FileId, tenant1User1, lockId);
-                Assert.AreEqual(HttpStatusCode.OK, result);
+                var unlockResponse = await fileRepository.UnlockFile(wopiFile.FileId, tenant1User1, lockId);
+                Assert.AreEqual(HttpStatusCode.OK, unlockResponse.Item1);
 
                 using (var wopiContext = new WopiContext())
                 {
                     var file = await wopiContext.Files.Where(f => f.FileId == wopiFile.FileId).FirstOrDefaultAsync();
                     Assert.IsNull(file.LockValue);
                 }
-                await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
+                var deleteResponse = await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
             }
         }
 
@@ -156,7 +162,8 @@ namespace Microsoft.Dx.WopiServer.UnitTest
                     var file = await wopiContext.Files.Where(f => f.FileId == wopiFile.FileId).FirstOrDefaultAsync();
                     Assert.AreEqual(renamedFileName, Path.GetFileNameWithoutExtension(file.FileName));
                 }
-                await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
+                var deleteResponse = await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
             }
 
             //await userRepository.DeleteUser(tenant1User1);
@@ -179,7 +186,8 @@ namespace Microsoft.Dx.WopiServer.UnitTest
                     Assert.AreEqual(wopiUserInfo, filePermission.UserInfo);
                 }
 
-                await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
+                var deleteResponse = await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
             }
         }
 
@@ -204,8 +212,7 @@ namespace Microsoft.Dx.WopiServer.UnitTest
                 // obtain access rights to original file for tenant1User2 in same tenant
                 var result1 = await fileRepository.GetFileInfoByTenantUser(ownerCopyResult.Item2.FileId, tenant1User2, tenant1);
                 Assert.AreEqual(HttpStatusCode.OK, result1.Item1);
-                Assert.AreEqual(ownerCopyResult.Item2.UniqueIdentifier, result1.Item2.UniqueIdentifier);
-
+              
                 // Get lock for tenantUser1
                 var result2 = await fileRepository.LockFile(ownerCopyResult.Item2.FileId, tenant1User1 , lockId, null);
                 Assert.AreEqual(HttpStatusCode.OK, result2.Item1);
@@ -222,9 +229,10 @@ namespace Microsoft.Dx.WopiServer.UnitTest
                 var tenantCopyResult = await fileRepository.CreateCopy(ownerCopyResult.Item2.FileId, tenant1User2, copyFileName, true);
                 Assert.AreEqual(HttpStatusCode.OK, tenantCopyResult.Item1);
 
-                await fileRepository.DeleteFile(originalFile.FileId, tenant1User1);
-                await fileRepository.DeleteFile(tenantCopyResult.Item2.FileId, tenant1User2);
-
+                var deleteResponse = await fileRepository.DeleteFile(originalFile.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
+                deleteResponse = await fileRepository.DeleteFile(tenantCopyResult.Item2.FileId, tenant1User2);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
             }
         }
 
@@ -255,11 +263,16 @@ namespace Microsoft.Dx.WopiServer.UnitTest
                 var result4 = await fileRepository.CreateCopySuggested(wopiFile.FileId, tenant1User1, copyFileName);
                 Assert.AreEqual(HttpStatusCode.OK, result4.Item1);
 
-                await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
-                await fileRepository.DeleteFile(result1.Item2.FileId, tenant1User1);
-                await fileRepository.DeleteFile(result2.Item2.FileId, tenant1User1);
-                await fileRepository.DeleteFile(result3.Item2.FileId, tenant1User1);
-                await fileRepository.DeleteFile(result4.Item2.FileId, tenant1User1);
+                var deleteResponse = await fileRepository.DeleteFile(wopiFile.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
+                deleteResponse = await fileRepository.DeleteFile(result1.Item2.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
+                deleteResponse = await fileRepository.DeleteFile(result2.Item2.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
+                deleteResponse = await fileRepository.DeleteFile(result3.Item2.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
+                deleteResponse = await fileRepository.DeleteFile(result4.Item2.FileId, tenant1User1);
+                Assert.AreEqual(HttpStatusCode.OK, deleteResponse);
             }
         }
 

@@ -14,7 +14,7 @@ namespace Microsoft.Dx.Wopi.Models
             {
                 SupportsCobalt = false,
                 SupportsContainers = false,
-                SupportsDeleteFile = false,
+                SupportsDeleteFile = true,
                 SupportsEcosystem = false,
                 SupportsExtendedLockLength = true,
                 SupportsFolders = false,

@@ -12,8 +12,6 @@ namespace Microsoft.Dx.WopiServerSql.Models
 {
     public class WopiFileModel 
     {
-      
-
         public async static Task<WopiFileModel> CreateWopiFileModel(WopiFile wopiFile)
         {
             var wopiFileModel = new WopiFileModel(wopiFile);

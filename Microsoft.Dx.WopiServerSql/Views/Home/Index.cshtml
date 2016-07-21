@@ -29,7 +29,7 @@
                             <td>
                                 @if (item.Actions.Count == 0)
                                 {
-                                    <span>@item.FileName</span>
+                                    <span>@item.FileName (<a href="#" onclick="deleteFile('@item.FileId')">delete</a>)</span>
                                 }
                                 else if (item.FileName.IndexOf(".wopitest") != -1)
                                 {

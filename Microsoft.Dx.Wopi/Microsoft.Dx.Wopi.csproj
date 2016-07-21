@@ -78,6 +78,8 @@
     <Compile Include="Models\IUserPermissions.cs" />
     <Compile Include="Models\IWopiHostCapabilities.cs" />
     <Compile Include="Models\IWopiHostProperties.cs" />
+    <Compile Include="Models\DeleteFileRequest.cs" />
+    <Compile Include="Models\DeleteFileResponse.cs" />
     <Compile Include="Models\UnlockAndRelockRequest.cs" />
     <Compile Include="Models\LockRequest.cs" />
     <Compile Include="Models\LockResponse.cs" />

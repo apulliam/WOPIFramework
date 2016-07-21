@@ -57,7 +57,7 @@ namespace Microsoft.Dx.WopiServerSql.Repository
                 }
 
             }
-            catch
+            catch (Exception ex)
             {
                 if (blockBlob != null && await blockBlob.ExistsAsync())
                     await blockBlob.DeleteAsync();
@@ -78,7 +78,6 @@ namespace Microsoft.Dx.WopiServerSql.Repository
                 Version = version,
                 LastModifiedTime = blockBlob.Properties.LastModified.Value,
                 LastModifiedUser = userId.ToLower(),
-                UniqueIdentifier = blockBlob.Properties.ContentMD5,
                 FilePermissions = new HashSet<WopiFilePermission>()
             };
 
@@ -141,25 +140,27 @@ namespace Microsoft.Dx.WopiServerSql.Repository
         /// <param name="lockValue"></param>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public async Task<Tuple<HttpStatusCode,string>> UpdateFileContent(string fileId,string userId, string lockValue, Stream stream)
+        public async Task<Tuple<HttpStatusCode,string,string>> UpdateFileContent(string fileId,string userId, string lockValue, Stream stream)
         {
             using (var wopiContext = new WopiContext())
             {
                 var filePermission = await wopiContext.FilePermissions.Where(fp => fp.FileId == fileId && fp.UserId == userId).Include("File").FirstOrDefaultAsync();
                 if (filePermission == null)
-                    return new Tuple<HttpStatusCode, string>(HttpStatusCode.NotFound,null);
+                    return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.NotFound, null, null);
 
                 WopiFile file = filePermission.File;
                 if (!file.IsLocked)
                 {
-                    if (stream.Length > 0)
-                        return new Tuple<HttpStatusCode, string>(HttpStatusCode.Conflict, string.Empty);
+                    if (file.Size > 0)
+                        return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.Conflict, string.Empty,null);
                 }
                 else
                 {
                     if (!file.IsSameLock(lockValue))
-                        return new Tuple<HttpStatusCode, string>(HttpStatusCode.Conflict, file.LockValue);
+                        return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.Conflict, file.LockValue, null);
                 }
+
+               
 
                 var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
                 var blobClient = storageAccount.CreateCloudBlobClient();
@@ -169,7 +170,13 @@ namespace Microsoft.Dx.WopiServerSql.Repository
                 var blockBlob = container.GetBlockBlobReference(fileId);
                 await blockBlob.UploadFromStreamAsync(stream);
 
-                return new Tuple<HttpStatusCode, string>(HttpStatusCode.OK, null);
+                file.Size = blockBlob.Properties.Length;
+                file.LastModifiedTime = blockBlob.Properties.LastModified.Value;
+                file.LastModifiedUser = userId.ToLower();
+
+
+                await wopiContext.SaveChangesAsync();
+                return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.OK, null, file.Version.ToString());
             }
         }
 
@@ -251,7 +258,7 @@ namespace Microsoft.Dx.WopiServerSql.Repository
         }
 
 
-        public async Task<Stream> GetFileContent(string fileId, string userId)
+        public async Task<Tuple<HttpStatusCode,Stream,string>> GetFileContent(string fileId, string userId)
         {
             var wopiFile = await GetFileInfo(fileId, userId);
             if (wopiFile != null)
@@ -264,47 +271,48 @@ namespace Microsoft.Dx.WopiServerSql.Repository
                     var blockBlob = container.GetBlobReference(fileId);
                     if (await blockBlob.ExistsAsync())
                     {
-                        return await blockBlob.OpenReadAsync();
+                        var stream = await blockBlob.OpenReadAsync();
+                        return new Tuple<HttpStatusCode,Stream,string>(HttpStatusCode.OK, stream, wopiFile.Version.ToString());
                     }
                 }
             }
-            return null;
+            return new Tuple<HttpStatusCode,Stream,string>(HttpStatusCode.NotFound,null, null);
         }
         
 
-        public async Task<Tuple<HttpStatusCode,string>> LockFile(string fileId, string userId, string lockId, string oldLockId, double lockDurationMinutes = 30)
+        public async Task<Tuple<HttpStatusCode,string,string>> LockFile(string fileId, string userId, string lockId, string oldLockId, double lockDurationMinutes = 30)
         {
             if (string.IsNullOrEmpty(lockId))
-                return new Tuple<HttpStatusCode, string>(HttpStatusCode.BadRequest, null);
+                return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.BadRequest, null, null);
 
             using (var wopiContext = new WopiContext())
             {
                 var file = await wopiContext.Files.Where(f => f.FileId == fileId && f.FilePermissions.Any(fp => fp.UserId == userId)).FirstOrDefaultAsync();
                 if (file == null)
-                    return new Tuple<HttpStatusCode, string>(HttpStatusCode.NotFound,null);
+                    return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.NotFound,null,null);
 
                 if (oldLockId != null)
                 {
                     if (file.IsLocked)
                     {
                         if (!file.IsSameLock(oldLockId))
-                            return new Tuple<HttpStatusCode, string>(HttpStatusCode.Conflict, file.LockValue);
+                            return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.Conflict, file.LockValue, null);
                     }
                     else
                     {
-                        return new Tuple<HttpStatusCode, string>(HttpStatusCode.Conflict, string.Empty);
+                        return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.Conflict, string.Empty,null);
                     }
                 }
                 else
                 {
                     if (file.IsLocked && !file.IsSameLock(lockId))
-                        return new Tuple<HttpStatusCode, string>(HttpStatusCode.Conflict, file.LockValue);
+                        return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.Conflict, file.LockValue,null);
 
                 }
 
                 file.Lock(lockId, lockDurationMinutes);
                 await wopiContext.SaveChangesAsync();
-                return new Tuple<HttpStatusCode, string>(HttpStatusCode.OK, null);
+                return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.OK, null,file.Version.ToString());
             }
         }
         
@@ -324,28 +332,28 @@ namespace Microsoft.Dx.WopiServerSql.Repository
             }
         }
 
-        public async Task<Tuple<HttpStatusCode,string>> UnlockFile(string fileId, string userId, string lockId)
+        public async Task<Tuple<HttpStatusCode,string,string>> UnlockFile(string fileId, string userId, string lockId)
         {
             if (string.IsNullOrEmpty(lockId))
-                return new Tuple<HttpStatusCode, string>(HttpStatusCode.BadRequest, null);
+                return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.BadRequest, null, null);
 
             using (var wopiContext = new WopiContext())
             {
                 var wopiFile = await wopiContext.Files.Where(f => f.FileId == fileId  && f.FilePermissions.Any(fp => fp.UserId == userId)).FirstOrDefaultAsync();
                 if (wopiFile == null)
-                    return new Tuple<HttpStatusCode,string>(HttpStatusCode.NotFound,null);
+                    return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.NotFound, null, null);
 
                 if (wopiFile.IsLocked)
                 {
                     if (!wopiFile.IsSameLock(lockId))
-                        return new Tuple<HttpStatusCode, string>(HttpStatusCode.Conflict, wopiFile.LockValue);
+                        return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.Conflict, wopiFile.LockValue, null);
                 }
                 else
-                    return new Tuple<HttpStatusCode, string>(HttpStatusCode.Conflict, string.Empty);
+                    return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.Conflict, string.Empty, null);
 
                 wopiFile.Unlock();
                 await wopiContext.SaveChangesAsync();
-                return new Tuple<HttpStatusCode, string>(HttpStatusCode.OK, null);
+                return new Tuple<HttpStatusCode,string,string>(HttpStatusCode.OK, null, wopiFile.Version.ToString());
             }
         }
 
@@ -361,6 +369,8 @@ namespace Microsoft.Dx.WopiServerSql.Repository
                     return new Tuple<HttpStatusCode, string>(HttpStatusCode.Conflict, file.LockValue);
 
                 var newFileName = newBaseFileName + file.FileExtension;
+                if (newFileName.Length > 512)
+                    return new Tuple<HttpStatusCode, string>(HttpStatusCode.BadRequest,null);
                 var existingFile = await wopiContext.Files.Where(f => f.FileName == newFileName).FirstOrDefaultAsync();
                 if (existingFile != null)
                     return new Tuple<HttpStatusCode, string>(HttpStatusCode.BadRequest, "File already exists");
@@ -395,6 +405,7 @@ namespace Microsoft.Dx.WopiServerSql.Repository
                 var blobClient = storageAccount.CreateCloudBlobClient();
 
                 var newWopiFile = await CreateCopyInternal(blobClient, wopiContext, originalFile, copyName, userId);
+                wopiContext.Files.Add(newWopiFile);
 
                 if (existingFile != null)
                 {
@@ -406,17 +417,17 @@ namespace Microsoft.Dx.WopiServerSql.Repository
                 if (existingFile != null)
                 {
                     // Do we need to explicity delete FilePermissions?
-                    var container = blobClient.GetContainerReference(originalFile.Container);
+                    var container = blobClient.GetContainerReference(existingFile.Container);
                     if (await container.ExistsAsync())
                     {
-                        var blockBlob = container.GetBlockBlobReference(originalFile.FileId);
+                        var blockBlob = container.GetBlockBlobReference(existingFile.FileId);
                         if (await blockBlob.ExistsAsync())
                         {
                             await blockBlob.DeleteAsync();
                         }
                     }
                 }
-                
+
                 return new Tuple<HttpStatusCode, WopiFile,string>(HttpStatusCode.OK, newWopiFile,null);
             }
         }
@@ -436,11 +447,11 @@ namespace Microsoft.Dx.WopiServerSql.Repository
                 await WaitForCopyAsync(newBlob);
 
                 newWopiFile = CreateOwnerRecords(newFileName, userId, newBlob, 1);
-                wopiContext.Files.Add(newWopiFile);
+                
 
             
             }
-            catch
+            catch (Exception ex)
             {
                 if (newBlob != null && await newBlob.ExistsAsync())
                     await newBlob.DeleteAsync();
@@ -484,6 +495,7 @@ namespace Microsoft.Dx.WopiServerSql.Repository
                 var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
                 var blobClient = storageAccount.CreateCloudBlobClient();
                 var newFile = await CreateCopyInternal(blobClient,wopiContext, originalFile, newFileName, userId);
+                wopiContext.Files.Add(newFile);
                 await wopiContext.SaveChangesAsync();
                 return new Tuple<HttpStatusCode, WopiFile>(HttpStatusCode.OK, newFile);
             }

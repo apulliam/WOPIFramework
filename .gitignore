@@ -194,3 +194,10 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+/gulpfile.js.txt
+/gulpfile.js
+/README.html
+/WOPIFramework.html
+/WOPIFramework.md
+/WOPI-ViewDocument.png
+/package.json

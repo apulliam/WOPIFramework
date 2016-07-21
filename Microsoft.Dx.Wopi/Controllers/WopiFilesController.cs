@@ -115,7 +115,7 @@ namespace Microsoft.Dx.Wopi.Controllers
                             case "UNLOCK":
                                 wopiResponse = await Unlock(new UnlockRequest(this.Request, file_id));
                                 break;
-                            case "PUT_RELATIVE_FILE":
+                            case "PUT_RELATIVE":
                                 var suggestedTarget = WopiRequest.GetHttpRequestHeader(this.Request, WopiRequestHeaders.SUGGESTED_TARGET);
                                 var relativeTarget = WopiRequest.GetHttpRequestHeader(this.Request, WopiRequestHeaders.RELATIVE_TARGET);
                                 if (suggestedTarget != null && relativeTarget != null)
@@ -123,7 +123,7 @@ namespace Microsoft.Dx.Wopi.Controllers
                                     // This really should be BadRequest, but the spec requires NotImplmented
                                     wopiResponse = new WopiResponse()
                                     {
-                                        StatusCode = HttpStatusCode.BadRequest
+                                        StatusCode = HttpStatusCode.NotImplemented
                                     };
                                 }
                                 else
@@ -135,7 +135,7 @@ namespace Microsoft.Dx.Wopi.Controllers
                                     else // Both are null
                                         wopiResponse =  new WopiResponse()
                                         {
-                                            StatusCode = HttpStatusCode.NotImplemented
+                                            StatusCode = HttpStatusCode.BadRequest
                                         };
                                 }
                                 break;
@@ -144,6 +144,9 @@ namespace Microsoft.Dx.Wopi.Controllers
                                 break;
                             case "PUT_USER_INFO":
                                 wopiResponse = await PutUserInfo(new PutUserInfoRequest(this.Request, file_id));
+                                break;
+                            case "DELETE":
+                                wopiResponse = await DeleteFile(new DeleteFileRequest(this.Request, file_id));
                                 break;
                             default:
                                 wopiResponse = wopiRequest.ResponseServerError(string.Format("Invalid {0} header value: {1}", WopiRequestHeaders.OVERRIDE, filesPostOverride));
@@ -198,7 +201,10 @@ namespace Microsoft.Dx.Wopi.Controllers
             }
             return wopiResponse.ToHttpResponse();
         }
+
+     
        
+
         public abstract Task<bool> Authorize(WopiRequest wopiRequest);
       
         public abstract Task<WopiResponse> CheckFileInfo(CheckFileInfoRequest checkFileInfoRequest);
@@ -224,5 +230,7 @@ namespace Microsoft.Dx.Wopi.Controllers
         public abstract Task<WopiResponse> PutUserInfo(PutUserInfoRequest putUserInfoRequest);
 
         public abstract Task<WopiResponse> PutFile(PutFileRequest putFileRequest);
+
+        public abstract Task<WopiResponse> DeleteFile(DeleteFileRequest deleteFileRequest);
     }
 }

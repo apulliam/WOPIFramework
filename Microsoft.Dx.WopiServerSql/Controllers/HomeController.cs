@@ -134,7 +134,7 @@ namespace Microsoft.Dx.WopiServerSql.Controllers
         }
 
         /// <summary>
-        /// Deletes the file from Azure Blob Storage and metadata into DocumentDB
+        /// Deletes the file from Azure Blob Storage and metadata in SQL Server
         /// </summary>
         [HttpDelete]
         [Authorize]
